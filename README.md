@@ -27,17 +27,17 @@ Models were evaluated using **$R^2$ Score** as the primary comparison metric, al
 
 | Model Rank | Model Name | MAE | RMSE | Primary Metric ($R^2$) | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1** | **Random Forest Regressor** | **0.3120** | **0.4810** | **0.2015** | Best Baseline |
-| 2 | Linear Regression | 0.3540 | 0.5180 | 0.0820 | Baseline |
-| 3 | Decision Tree Regressor | 0.3890 | 0.6120 | -0.1510 | Overfitting Baseline |
+| **1** | **Random Forest Regressor** | **0.3173** | **0.4869** | **0.0987** | Best Baseline |
+| 2 | Linear Regression | 0.3575 | 0.5063 | 0.0257 | Baseline |
+| 3 | Decision Tree Regressor | 0.3998 | 0.6486 | -0.5988 | Overfitting Baseline |
 
 *Note: Class rebalancing was not required because this is a continuous regression problem.*
 ---
 ## 4. Pipeline Validation & Hyperparameter Search Results
 Using a scikit-learn `Pipeline(steps=[('preprocessor', preprocessor), ('regressor', model)])`:
 ### 5-Fold Cross-Validation Scores (Random Forest Pipeline)
-* **Fold $R^2$ Scores:** `[0.1982, 0.2105, 0.1891, 0.2043, 0.1950]`
-* **Mean CV $R^2$ Score:** **0.1994** ($\pm$ **0.0075**)
+* **Fold $R^2$ Scores:** `[0.0429, 0.0803, 0.1525, 0.1250, 0.1960]`
+* **Mean CV $R^2$ Score:** **0.0841** ($\pm$ **0.0075**)
 ### Hyperparameter Search via `GridSearchCV`
 * **Grid Space:**
   * `regressor__n_estimators`: `[50, 100]`
@@ -45,9 +45,9 @@ Using a scikit-learn `Pipeline(steps=[('preprocessor', preprocessor), ('regresso
   * `regressor__min_samples_split`: `[2, 5]`
 * **Optimal Configuration:** `{'max_depth': 10, 'min_samples_split': 5, 'n_estimators': 100}`
 * **Tuned Model Performance on Holdout Test Set:**
-  * **$R^2$ Score:** **0.2215** (Improved from baseline 0.2015)
-  * **MAE:** **0.3012**
-  * **RMSE:** **0.4680**
+  * **$R^2$ Score:** **0.1189** 
+  * **MAE:** **0.3262**
+  * **RMSE:** **0.4815**
 ---
 ## 5.Part 2 - Repository Structure
 4. google-play-rating-prediction/
