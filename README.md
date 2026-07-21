@@ -54,6 +54,6 @@ Using a scikit-learn `Pipeline(steps=[('preprocessor', preprocessor), ('regresso
 ├── data/
 │   └── googleplaystore.csv          # Self-contained raw dataset
 ├── notebooks/
-│   └── predictive_pipeline.ipynb    # Full notebook execution
+│   └── run_pipeline.ipynb    # Full jupiter notebook 
 ├── requirements.txt                 # Dependencies
 └── README.md                        # Framing, leakage strategy, model rank & decision
