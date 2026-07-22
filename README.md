@@ -1,59 +1,95 @@
-# Google Play Store Rating Prediction Pipeline
-A leak-free, end-to-end predictive machine learning pipeline designed to forecast mobile application ratings on the Google Play Store based on metadata features.
+# 🤖 Google Play Store Rating Prediction Pipeline
+
+A leak-free, end-to-end machine learning pipeline that predicts mobile app ratings on the Google Play Store using app metadata.
+
 ---
+
 ## 1. Problem Framing
-* **Business Question:** Can we accurately predict a mobile application's overall user rating (`Rating`) using early platform metadata (such as category, installation scale, file size, price tier, and content rating) prior to or shortly after launch?
-* **Problem Type:** **Continuous Regression** (Target variable `Rating` ranges continuously between 1.0 and 5.0).
-* **Feature Split:**
-  * **Target ($y$):** `Rating` (Continuous numeric variable).
-  * **Features ($X$):**
-    * *Categorical:* `Category`, `Content Rating`, `Type` (Free vs. Paid).
-    * *Numerical:* `Reviews`, `Size` (in KB), `Installs`, `Price` (in USD).
----
-## 2. Feature Preparation & Data Leakage Prevention Strategy
-To guarantee strict evaluation integrity and prevent data leakage:
-1. **Train/Test Split First:** Data was partitioned into **80% Training ($X_{\text{train}}, y_{\text{train}}$)** and **20% Testing ($X_{\text{test}}, y_{\text{test}}$)** using `train_test_split` with `random_state=42` **before** fitting any feature engineering step.
-2. **Encoding Strategy:**
-   * `Category`, `Content Rating`, and `Type` have no strict intrinsic ordering and were encoded using **One-Hot Encoding** (`handle_unknown='ignore'`).
-3. **Scaling Strategy:**
-   * Numerical features (`Reviews`, `Size`, `Installs`, `Price`) were standardized using `StandardScaler`.
-4. **Leakage Control Execution:**
-   * The `StandardScaler` and `OneHotEncoder` were fitted strictly on $X_{\text{train}}$.
-   * The test set $X_{\text{test}}$ was transformed using parameters computed solely from $X_{\text{train}}$.
-   * For cross-validation, preprocessing and models were unified using a scikit-learn `Pipeline` wrapped with `ColumnTransformer`. This refits all encoders/scalers inside each individual CV fold using only that fold's training slice.
----
-## 3. Model Performance & Comparison Table
-Models were evaluated using **$R^2$ Score** as the primary comparison metric, alongside **MAE** and **RMSE** for contextual error bounds:
 
-| Model Rank | Model Name | MAE | RMSE | Primary Metric ($R^2$) | Status |
+- **Business Question:** Can we predict an app's overall user rating (`Rating`) using early metadata — category, install scale, file size, price tier, and content rating — available prior to or shortly after launch?
+- **Problem Type:** Continuous regression (`Rating` ranges 1.0–5.0)
+
+**Feature Split**
+
+| Type | Features |
+|---|---|
+| **Target (y)** | `Rating` |
+| **Categorical (X)** | `Category`, `Content Rating`, `Type` (Free/Paid) |
+| **Numerical (X)** | `Reviews`, `Size` (KB), `Installs`, `Price` (USD) |
+
+---
+
+## 2. Feature Preparation & Leakage Prevention
+
+1. **Split first:** 80/20 train/test split (`random_state=42`) performed **before** any feature engineering.
+2. **Encoding:** `Category`, `Content Rating`, and `Type` encoded via **One-Hot Encoding** (`handle_unknown='ignore'`) — no intrinsic order.
+3. **Scaling:** `Reviews`, `Size`, `Installs`, `Price` standardized via `StandardScaler`.
+4. **Leakage control:**
+   - Scaler and encoder fitted **only** on the training set.
+   - Test set transformed using training-derived parameters only.
+   - Preprocessing + model unified in a scikit-learn `Pipeline` with `ColumnTransformer`, so each cross-validation fold refits independently on its own training slice.
+
+---
+
+## 3. Model Performance
+
+| Rank | Model | MAE | RMSE | R² | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1** | **Random Forest Regressor** | **0.3173** | **0.4869** | **0.0987** | Best Baseline |
+| 🥇 1 | **Random Forest Regressor** | **0.3173** | **0.4869** | **0.0987** | Best baseline |
 | 2 | Linear Regression | 0.3575 | 0.5063 | 0.0257 | Baseline |
-| 3 | Decision Tree Regressor | 0.3998 | 0.6486 | -0.5988 | Overfitting Baseline |
+| 3 | Decision Tree Regressor | 0.3998 | 0.6486 | -0.5988 | Overfitting |
 
-*Note: Class rebalancing was not required because this is a continuous regression problem.*
+*Class rebalancing wasn't needed — this is a continuous regression task, not classification.*
+
 ---
-## 4. Pipeline Validation & Hyperparameter Search Results
-Using a scikit-learn `Pipeline(steps=[('preprocessor', preprocessor), ('regressor', model)])`:
-### 5-Fold Cross-Validation Scores (Random Forest Pipeline)
-* **Fold $R^2$ Scores:** `[0.0429, 0.0803, 0.1525, 0.1250, 0.1960]`
-* **Mean CV $R^2$ Score:** **0.0841** ($\pm$ **0.0075**)
-### Hyperparameter Search via `GridSearchCV`
-* **Grid Space:**
-  * `regressor__n_estimators`: `[50, 100]`
-  * `regressor__max_depth`: `[10, 20, None]`
-  * `regressor__min_samples_split`: `[2, 5]`
-* **Optimal Configuration:** `{'max_depth': 10, 'min_samples_split': 5, 'n_estimators': 100}`
-* **Tuned Model Performance on Holdout Test Set:**
-  * **$R^2$ Score:** **0.1189** 
-  * **MAE:** **0.3262**
-  * **RMSE:** **0.4815**
+
+## 4. Pipeline Validation & Hyperparameter Tuning
+
+**5-Fold Cross-Validation (Random Forest)**
+- Fold R² scores: `0.0429, 0.0803, 0.1525, 0.1250, 0.1960`
+- Mean CV R²: **0.0841 (± 0.0075)**
+
+**GridSearchCV**
+
+| Parameter | Grid Searched | Best Value |
+|---|---|---|
+| `n_estimators` | 50, 100 | 100 |
+| `max_depth` | 10, 20, None | 10 |
+| `min_samples_split` | 2, 5 | 5 |
+
+**Tuned Model — Holdout Test Set**
+- R²: **0.1189**
+- MAE: **0.3262**
+- RMSE: **0.4815**
+
 ---
-## 5.Part 2 - Repository Structure
-4. google-play-rating-prediction/
+
+## 5. Repository Structure
+
+```
+google-play-rating-prediction/
 ├── data/
-│   └── googleplaystore.csv          # Self-contained raw dataset
+│   └── googleplaystore.csv     # Raw dataset
 ├── notebooks/
-│   └── run_pipeline.ipynb    # Full jupiter notebook 
-├── requirements.txt                 # Dependencies
-└── README.md                        # Framing, leakage strategy, model rank & decision
+│   └── run_pipeline.ipynb      # Full pipeline notebook
+├── requirements.txt             # Dependencies
+└── README.md                    # Framing, leakage strategy, model results
+```
+
+---
+
+## 6. Setup
+
+```bash
+git clone https://github.com/pramodj551-oss/google-play-rating-prediction.git
+cd google-play-rating-prediction
+pip install -r requirements.txt
+```
+
+---
+
+## 📬 Contact
+
+**Pramod Prakash Jadhav**
+📧 pramodj551@gmail.com
+🔗 [LinkedIn](https://www.linkedin.com/in/pramod-prakash-jadhav-42ba2281)
